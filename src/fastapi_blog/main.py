@@ -9,7 +9,7 @@ templates = Jinja2Templates(directory="templates")
 posts: list[dict] = [
     {
         "id": 1,
-        "author": "Corey Schafer",
+        "author": "Manas Diwan",
         "title": "FastAPI is Awesome",
         "content": "This framework is really easy to use and super fast.",
         "date_posted": "April 20, 2025",
@@ -23,8 +23,9 @@ posts: list[dict] = [
     },
 ]
 
-@app.get("/")
-def read_root(request: Request):
+@app.get("/", include_in_schema=False, name="home")
+@app.get("/posts", include_in_schema=False, name="posts")
+def home(request: Request):
     return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
 
 
