@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import HTTPException as starletteHTTPException
+from schemas import PostCreate, PostResponse
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -31,6 +32,7 @@ posts: list[dict] = [
 def home(request: Request):
     return templates.TemplateResponse(request, "home.html", {"posts": posts, "title": "Home"})
 
+
 @app.get("/posts/{post_id}", include_in_schema=False, name="post_page")
 def post_page(request: Request, post_id: int):
     for post in posts:
@@ -41,12 +43,32 @@ def post_page(request: Request, post_id: int):
 
 
 @app.get("/api/posts/{post_id}")
-def get_post(post_id: int):
+def get_post(post_id: int, response_model=PostResponse):
     for post in posts:
         if post.get("id") == post_id:
             return post
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post no. {post_id} not found")
 
+
+@app.get("/api/posts/", response_model=list[PostResponse])
+def get_post():
+    return posts
+
+@app.post("/api/posts",
+          response_model = PostResponse,
+          status_code=status.HTTP_201_CREATED
+)
+def create_post(post: PostCreate):
+    new_id = max(p["id"] for p in posts) + 1 if posts else 1
+    new_post = {
+        "id": new_id,
+        "title": post.title,
+        "content": post.content,
+        "author": post.author,
+        "date_posted": "April 23, 2025",
+    }
+    posts.append(new_post)
+    return new_post
 
 @app.exception_handler(starletteHTTPException)
 def general_http_exception_handler(request: Request, exception: starletteHTTPException):
