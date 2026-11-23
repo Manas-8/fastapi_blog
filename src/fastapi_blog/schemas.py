@@ -25,10 +25,9 @@ class PostBase(BaseModel):
 class PostCreate(PostBase):
     user_id : int
 
-
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict
-
+class PostUpdate(PostBase):
+    title : str | None = Field(default=None, min_length=1, max_length=100)
+    content : str | None = Field(default=None, min_length=1)
 
 class PostResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
